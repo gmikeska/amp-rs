@@ -922,6 +922,26 @@ impl ElementsRpc {
         }
     }
 
+    /// Gets the base URL of the Elements RPC endpoint
+    ///
+    /// # Returns
+    /// Returns a reference to the base URL string
+    ///
+    /// # Example
+    /// ```rust
+    /// use amp_rs::ElementsRpc;
+    ///
+    /// let rpc = ElementsRpc::new(
+    ///     "http://localhost:18884".to_string(),
+    ///     "user".to_string(),
+    ///     "pass".to_string()
+    /// );
+    /// assert_eq!(rpc.base_url(), "http://localhost:18884");
+    /// ```
+    pub fn base_url(&self) -> &str {
+        &self.base_url
+    }
+
     /// Creates a new `ElementsRpc` client from environment variables
     ///
     /// Expected environment variables:
@@ -952,13 +972,17 @@ impl ElementsRpc {
 
     /// Makes an RPC call to the Elements node
     ///
+    /// This method is public to allow custom signers and extensions to make
+    /// RPC calls to the Elements node. It's used internally for all node
+    /// operations and can be used by external signer implementations.
+    ///
     /// # Arguments
     /// * `method` - The RPC method name
     /// * `params` - The parameters for the RPC call
     ///
     /// # Errors
     /// Returns an error if the RPC call fails or returns an error
-    async fn rpc_call<T: serde::de::DeserializeOwned>(
+    pub async fn rpc_call<T: serde::de::DeserializeOwned>(
         &self,
         method: &str,
         params: serde_json::Value,
@@ -3476,7 +3500,7 @@ impl ElementsRpc {
         }
 
         // Check if hex string has valid format (even length, valid hex characters)
-        if !unsigned_tx_hex.len().is_multiple_of(2) {
+        if unsigned_tx_hex.len() % 2 != 0 {
             return Err(AmpError::validation(
                 "Unsigned transaction hex must have even length".to_string(),
             ));
@@ -3518,7 +3542,7 @@ impl ElementsRpc {
         }
 
         // Check if signed transaction has valid hex format
-        if !signed_tx_hex.len().is_multiple_of(2) {
+        if signed_tx_hex.len() % 2 != 0 {
             return Err(AmpError::validation(
                 "Signed transaction hex must have even length".to_string(),
             ));

@@ -130,9 +130,11 @@
 
 pub mod error;
 pub mod lwk;
+pub mod node;
 
 pub use error::SignerError;
 pub use lwk::LwkSoftwareSigner;
+pub use node::ElementsRpcSigner;
 
 use async_trait::async_trait;
 
