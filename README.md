@@ -349,11 +349,21 @@ export AMP_TOKEN_PERSISTENCE=true
 
 ## Signer Setup and Usage
 
-The AMP client includes a comprehensive signer implementation for handling asset operations like distribution, reissuance, and burning. The `LwkSoftwareSigner` provides testnet-focused transaction signing using Blockstream's Liquid Wallet Kit (LWK).
+The AMP client includes comprehensive signer implementations for handling asset operations like distribution, reissuance, and burning. All signers implement the `Signer` trait, providing a uniform interface that makes it easy to switch between different signing backends.
+
+### Available Signers
+
+1. **`LwkSoftwareSigner`**: Software-based signing using mnemonic phrases and Blockstream's Liquid Wallet Kit (LWK)
+   - Best for: Automated testing, CI/CD, development
+   - No node wallet required
+
+2. **`ElementsRpcSigner`**: Node wallet-based signing via RPC
+   - Best for: Integration testing, debugging, node-based workflows
+   - Requires Elements node with loaded wallet
 
 ### ⚠️ Security Warning
 
-**TESTNET/REGTEST ONLY**: The `LwkSoftwareSigner` is designed exclusively for testnet and regtest environments. It stores mnemonic phrases in plain text and should NEVER be used in production or with real funds.
+**TESTNET/REGTEST ONLY**: Both signer implementations are designed exclusively for testnet and regtest environments. The `LwkSoftwareSigner` stores mnemonic phrases in plain text and the `ElementsRpcSigner` relies on node wallet security. Neither should NEVER be used in production or with real funds.
 
 ### Basic Signer Setup
 
@@ -482,9 +492,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+### Using ElementsRpcSigner with Node Wallet
+
+For integration testing or when you already have an Elements node with a configured wallet, you can use the `ElementsRpcSigner`:
+
+```rust
+use amp_rs::{ApiClient, ElementsRpc, signer::ElementsRpcSigner};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let api_client = ApiClient::new().await?;
+    let rpc = ElementsRpc::from_env()?;
+    
+    // Create signer that delegates to node wallet
+    let signer = ElementsRpcSigner::new(rpc.clone());
+    
+    // Use with any asset operation
+    api_client.reissue_asset(
+        "asset-uuid-123",
+        1000000,
+        &rpc,
+        &signer  // Node wallet handles signing
+    ).await?;
+    
+    Ok(())
+}
+```
+
+The `ElementsRpcSigner` wraps the node's signing capability through the same `Signer` trait interface, making it easy to switch between node-based and software-based signing without code changes.
+
 ### Wallet Integration
 
-For Elements wallet integration, you can generate descriptors from the signer:
+For Elements wallet integration, you can generate descriptors from the LwkSoftwareSigner:
 
 ```rust
 use amp_rs::signer::LwkSoftwareSigner;
