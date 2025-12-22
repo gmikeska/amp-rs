@@ -289,10 +289,13 @@ async fn test_get_asset_reissuances() {
     let reissuance = &reissuances[0];
     assert!(!reissuance.txid.is_empty());
     assert_eq!(reissuance.vout, 0);
-    assert!(!reissuance.destination_address.is_empty());
+    assert!(reissuance.destination_address.is_some());
+    assert!(!reissuance.destination_address.as_ref().unwrap().is_empty());
     assert_eq!(reissuance.reissuance_amount, 1_000_000_000);
-    assert!(!reissuance.confirmed_in_block.is_empty());
-    assert!(!reissuance.created.is_empty());
+    assert!(reissuance.confirmed_in_block.is_some());
+    assert!(!reissuance.confirmed_in_block.as_ref().unwrap().is_empty());
+    assert!(reissuance.created.is_some());
+    assert!(!reissuance.created.as_ref().unwrap().is_empty());
 }
 
 #[tokio::test]

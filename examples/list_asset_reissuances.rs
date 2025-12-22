@@ -44,10 +44,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Reissuance #{}", idx + 1);
             println!("  Transaction ID: {}", reissuance.txid);
             println!("  Output Index (vout): {}", reissuance.vout);
-            println!("  Destination Address: {}", reissuance.destination_address);
+            println!(
+                "  Destination Address: {}",
+                reissuance.destination_address.as_deref().unwrap_or("N/A")
+            );
             println!("  Reissuance Amount: {}", reissuance.reissuance_amount);
-            println!("  Confirmed in Block: {}", reissuance.confirmed_in_block);
-            println!("  Created: {}", reissuance.created);
+            println!(
+                "  Confirmed in Block: {}",
+                reissuance.confirmed_in_block.as_deref().unwrap_or("N/A")
+            );
+            println!(
+                "  Created: {}",
+                reissuance.created.as_deref().unwrap_or("N/A")
+            );
             println!();
         }
 

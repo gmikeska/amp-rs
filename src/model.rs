@@ -551,11 +551,15 @@ pub struct Utxo {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Reissuance {
     pub txid: String,
+    #[serde(alias = "vin")]  // API sends "vin", we also accept "vout" for backwards compatibility
     pub vout: i64,
-    pub destination_address: String,
+    #[serde(default)]
+    pub destination_address: Option<String>,
     pub reissuance_amount: i64,
-    pub confirmed_in_block: String,
-    pub created: String,
+    #[serde(default)]
+    pub confirmed_in_block: Option<String>,
+    #[serde(default)]
+    pub created: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
