@@ -1581,12 +1581,12 @@ impl MockApiClient {
                 txid: "abc123def456789012345678901234567890123456789012345678901234".to_string(),
                 vout: 0,
                 destination_address: Some(
-                    "lq1qqwxyz1234567890abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr".to_string()
+                    "lq1qqwxyz1234567890abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr".to_string(),
                 ),
                 reissuance_amount: 1_000_000_000,
                 confirmed_in_block: Some(
                     "block_hash_1234567890abcdef1234567890abcdef1234567890abcdef12345678"
-                        .to_string()
+                        .to_string(),
                 ),
                 created: Some("2024-01-15T10:30:00Z".to_string()),
             }])

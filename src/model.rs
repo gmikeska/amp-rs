@@ -551,7 +551,7 @@ pub struct Utxo {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Reissuance {
     pub txid: String,
-    #[serde(alias = "vin")]  // API sends "vin", we also accept "vout" for backwards compatibility
+    #[serde(alias = "vin")] // API sends "vin", we also accept "vout" for backwards compatibility
     pub vout: i64,
     #[serde(default)]
     pub destination_address: Option<String>,
