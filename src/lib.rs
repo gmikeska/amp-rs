@@ -40,8 +40,8 @@ pub use mock_client::MockApiClient;
 pub use model::{
     AssetDistributionAssignment, AssetTransaction, AssetTransactionInput, AssetTransactionOutput,
     AssetTransactionParams, BurnConfirmRequest, BurnCreate, BurnRequest, BurnResponse,
-    ConfirmDistributionRequest, DistributionResponse, DistributionTxData, ReceivedByAddress,
-    Reissuance, ReissueConfirmRequest, ReissueRequest, ReissueRequestResponse, ReissueResponse,
-    TransactionDetail, TxInput, Unspent, UpdateBlindersRequest,
+    ConfirmDistributionRequest, DistributionResponse, DistributionTxData, ProgressUpdate,
+    ReceivedByAddress, Reissuance, ReissueConfirmRequest, ReissueRequest, ReissueRequestResponse,
+    ReissueResponse, TransactionDetail, TxInput, Unspent, UpdateBlindersRequest,
 };
 pub use signer::{LwkSoftwareSigner, Signer, SignerError};
