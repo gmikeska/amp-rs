@@ -2885,7 +2885,7 @@ impl ElementsRpc {
                     // Send progress update if confirmations changed
                     if tx_detail.confirmations != last_confirmations {
                         last_confirmations = tx_detail.confirmations;
-                        
+
                         if let Some(tx) = progress_tx {
                             let _ = tx.send(crate::model::ProgressUpdate::Confirmation {
                                 current: tx_detail.confirmations,
@@ -2923,7 +2923,7 @@ impl ElementsRpc {
                     );
                     // Continue polling even if individual calls fail, as the transaction
                     // might not be visible immediately after broadcasting
-                    
+
                     // Send initial progress update (0 confirmations) if we haven't seen the tx yet
                     if last_confirmations == 0 {
                         if let Some(tx) = progress_tx {
@@ -14672,12 +14672,10 @@ impl ApiClient {
             })?;
 
         tracing::info!("✓ Transaction sent successfully with ID: {}", txid);
-        
+
         // Notify of transaction sent
         if let Some(ref tx) = progress_tx {
-            let _ = tx.send(crate::model::ProgressUpdate::TxSent {
-                txid: txid.clone(),
-            });
+            let _ = tx.send(crate::model::ProgressUpdate::TxSent { txid: txid.clone() });
         }
 
         // Step 9: Wait for confirmations (with progress updates)
@@ -14862,7 +14860,11 @@ impl ApiClient {
     ///
     /// # Returns
     /// Returns the transaction ID on success, or an error if any step fails
-    #[allow(clippy::too_many_arguments, clippy::cognitive_complexity, clippy::too_many_lines)]
+    #[allow(
+        clippy::too_many_arguments,
+        clippy::cognitive_complexity,
+        clippy::too_many_lines
+    )]
     pub async fn reissue_asset_with_progress(
         &self,
         asset_uuid: &str,
@@ -15051,19 +15053,26 @@ impl ApiClient {
             .to_string(); // Convert to owned String to avoid borrow issues
 
         if let Some(ref tx) = progress_tx {
-            let _ = tx.send(crate::model::ProgressUpdate::TxSent {
-                txid: txid.clone(),
-            });
+            let _ = tx.send(crate::model::ProgressUpdate::TxSent { txid: txid.clone() });
         }
 
         // Wait for 1 confirmation before spawning treasury address task
         send_progress(12, total_steps, "Waiting for confirmations");
         node_rpc
-            .wait_for_confirmations_with_progress(wallet_name, &txid, Some(1), Some(10), None, progress_tx.as_ref())
+            .wait_for_confirmations_with_progress(
+                wallet_name,
+                &txid,
+                Some(1),
+                Some(10),
+                None,
+                progress_tx.as_ref(),
+            )
             .await
             .map_err(|e| {
                 tracing::error!("Confirmation waiting (1 conf) failed: {}", e);
-                e.with_context(format!("Step 12: Waiting for 1 confirmation for txid: {txid}"))
+                e.with_context(format!(
+                    "Step 12: Waiting for 1 confirmation for txid: {txid}"
+                ))
             })?;
 
         // Spawn treasury address extraction task
@@ -15809,8 +15818,9 @@ impl ApiClient {
         // Delegate to the existing burn_asset implementation
         // In a full implementation, this would mirror distribute_asset_with_progress
         // with step-by-step progress updates and confirmation tracking
-        self.burn_asset(asset_uuid, amount_to_burn, node_rpc, wallet_name, signer).await?;
-        
+        self.burn_asset(asset_uuid, amount_to_burn, node_rpc, wallet_name, signer)
+            .await?;
+
         // Send completion progress if channel provided
         if let Some(ref tx) = progress_tx {
             let _ = tx.send(crate::model::ProgressUpdate::Step {
@@ -15819,7 +15829,7 @@ impl ApiClient {
                 message: "Burn completed".to_string(),
             });
         }
-        
+
         // Return placeholder since burn_asset doesn't currently return txid
         Ok("burn_transaction_confirmed".to_string())
     }
