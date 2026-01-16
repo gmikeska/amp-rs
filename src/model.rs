@@ -1320,6 +1320,26 @@ mod tests {
     }
 }
 
+/// Progress update for long-running operations
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum ProgressUpdate {
+    /// General step progress
+    Step {
+        current: u32,
+        total: u32,
+        message: String,
+    },
+    /// Transaction confirmation progress
+    Confirmation {
+        current: u32,
+        required: u32,
+        txid: String,
+    },
+    /// Transaction sent (provides txid for tracking)
+    TxSent { txid: String },
+}
+
 /// Custom serialization module for Secret<String>
 pub mod secret_serde {
     use super::{Deserialize, Deserializer, Secret, Serialize, Serializer};
