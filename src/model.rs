@@ -1299,12 +1299,15 @@ mod tests {
         }"#;
 
         let activity: Activity = serde_json::from_str(api_response).unwrap();
-        
+
         assert_eq!(activity.activity_type, "distribution");
         assert_eq!(activity.blockheight, 2191842);
         // This is the critical assertion - registered_user should be populated
-        assert_eq!(activity.registered_user, Some(2137), 
-            "registered_user should be deserialized from API response");
+        assert_eq!(
+            activity.registered_user,
+            Some(2137),
+            "registered_user should be deserialized from API response"
+        );
     }
 
     /// Test that Activity handles null registered_user correctly
@@ -1326,7 +1329,7 @@ mod tests {
         }"#;
 
         let activity: Activity = serde_json::from_str(api_response).unwrap();
-        
+
         assert_eq!(activity.activity_type, "issuance");
         assert_eq!(activity.registered_user, None);
     }
