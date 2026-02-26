@@ -317,7 +317,6 @@ pub struct Activity {
     pub blockheight: i64,
     pub asset_blinder: String,
     pub amount_blinder: String,
-    #[serde(rename = "registered user")]
     pub registered_user: Option<i64>,
     pub amount: i64,
 }
@@ -1276,6 +1275,60 @@ mod tests {
         assert_eq!(deserialized.tx_data.txid, confirm_request.tx_data.txid);
         assert_eq!(deserialized.change_data.len(), 1);
         assert_eq!(deserialized.change_data[0].txid, "change_txid_123");
+    }
+
+    /// Test that Activity correctly deserializes registered_user from API response.
+    /// The API returns "registered_user" (with underscore) but we had a bug where
+    /// we were looking for "registered user" (with space).
+    #[test]
+    fn test_activity_registered_user_deserialization() {
+        // This is the actual JSON format returned by the AMP API
+        let api_response = r#"{
+            "type": "distribution",
+            "datetime": "2025-11-23T01:25:22Z",
+            "description": "Distribution to investor 2137",
+            "txid": "6b22cfd7ab3fc7d166b9a9b2edce1af2017183705ca495c8e1b94f8618ecfa73",
+            "vout": 2,
+            "blockheight": 2191842,
+            "investor": 2137,
+            "GAID": "GAFeuScUmoDdj9CnFRiz5VGNKEFfW",
+            "amount": 10000000000000,
+            "asset_blinder": "efc801bb787d9fda0405f0dd3e675dc9043cb639d43ac12c3049e1678dc21571",
+            "amount_blinder": "035d10d753fe948aedefa10c86d7137a98a21aa77ffd688294f48f6999c13ddc",
+            "registered_user": 2137
+        }"#;
+
+        let activity: Activity = serde_json::from_str(api_response).unwrap();
+        
+        assert_eq!(activity.activity_type, "distribution");
+        assert_eq!(activity.blockheight, 2191842);
+        // This is the critical assertion - registered_user should be populated
+        assert_eq!(activity.registered_user, Some(2137), 
+            "registered_user should be deserialized from API response");
+    }
+
+    /// Test that Activity handles null registered_user correctly
+    #[test]
+    fn test_activity_null_registered_user_deserialization() {
+        let api_response = r#"{
+            "type": "issuance",
+            "datetime": "2025-11-23T01:15:50Z",
+            "description": "Initial issuance",
+            "txid": "5adb5f532df28a7ca5dee679b914f269fb1992c4dc07a74b8c98509a5d66805a",
+            "vout": 1,
+            "blockheight": 2191824,
+            "investor": null,
+            "GAID": null,
+            "amount": 2100000000000000,
+            "asset_blinder": "0000000000000000000000000000000000000000000000000000000000000000",
+            "amount_blinder": "0000000000000000000000000000000000000000000000000000000000000000",
+            "registered_user": null
+        }"#;
+
+        let activity: Activity = serde_json::from_str(api_response).unwrap();
+        
+        assert_eq!(activity.activity_type, "issuance");
+        assert_eq!(activity.registered_user, None);
     }
 
     #[test]
