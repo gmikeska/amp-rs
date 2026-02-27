@@ -39,10 +39,7 @@ async fn main() {
         .expect("Failed to run psql");
 
     if !output.status.success() {
-        eprintln!(
-            "psql failed: {}",
-            String::from_utf8_lossy(&output.stderr)
-        );
+        eprintln!("psql failed: {}", String::from_utf8_lossy(&output.stderr));
         std::process::exit(1);
     }
 
