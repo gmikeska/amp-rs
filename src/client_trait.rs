@@ -5,9 +5,10 @@
 
 use crate::{
     model::{
-        Activity, AddressGaidResponse, Asset, AssetActivityParams, AssetSummary, CategoryAdd,
-        CategoryResponse, GaidBalanceEntry, Ownership, RegisterAssetResponse, RegisteredUserAdd,
-        RegisteredUserEdit, RegisteredUserResponse, Reissuance, ValidateGaidResponse,
+        Activity, AddressGaidResponse, Asset, AssetActivityParams, AssetSummary, Assignment,
+        CategoryAdd, CategoryResponse, GaidBalanceEntry, Ownership, RegisterAssetResponse,
+        RegisteredUserAdd, RegisteredUserEdit, RegisteredUserResponse, Reissuance,
+        ValidateGaidResponse,
     },
     Error,
 };
@@ -132,6 +133,12 @@ pub trait AmpClient: Send + Sync {
         category_id: i64,
         asset_uuid: &str,
     ) -> Result<CategoryResponse, Error>;
+
+    /// Get assignments for a specific asset
+    async fn get_asset_assignments(
+        &self,
+        asset_uuid: &str,
+    ) -> Result<Vec<Assignment>, Error>;
 }
 
 /// Blanket implementation of `AmpClient` for `Box<T>`
@@ -270,6 +277,13 @@ impl<T: AmpClient + ?Sized> AmpClient for Box<T> {
         (**self)
             .add_asset_to_category(category_id, asset_uuid)
             .await
+    }
+
+    async fn get_asset_assignments(
+        &self,
+        asset_uuid: &str,
+    ) -> Result<Vec<Assignment>, Error> {
+        (**self).get_asset_assignments(asset_uuid).await
     }
 }
 
@@ -410,5 +424,12 @@ impl<T: AmpClient + ?Sized> AmpClient for std::sync::Arc<T> {
         (**self)
             .add_asset_to_category(category_id, asset_uuid)
             .await
+    }
+
+    async fn get_asset_assignments(
+        &self,
+        asset_uuid: &str,
+    ) -> Result<Vec<Assignment>, Error> {
+        (**self).get_asset_assignments(asset_uuid).await
     }
 }

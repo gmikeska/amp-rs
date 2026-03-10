@@ -2232,4 +2232,11 @@ impl AmpClient for MockApiClient {
     ) -> Result<CategoryResponse, Error> {
         self.add_asset_to_category(category_id, asset_uuid).await
     }
+
+    async fn get_asset_assignments(
+        &self,
+        asset_uuid: &str,
+    ) -> Result<Vec<Assignment>, Error> {
+        self.get_asset_assignments(asset_uuid).await
+    }
 }
