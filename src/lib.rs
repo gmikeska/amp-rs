@@ -44,4 +44,4 @@ pub use model::{
     ReceivedByAddress, Reissuance, ReissueConfirmRequest, ReissueRequest, ReissueRequestResponse,
     ReissueResponse, TransactionDetail, TxInput, Unspent, UpdateBlindersRequest,
 };
-pub use signer::{LwkSoftwareSigner, Signer, SignerError};
+pub use signer::{ElementsRpcSigner, LwkSoftwareSigner, Signer, SignerError};
