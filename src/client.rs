@@ -3322,6 +3322,105 @@ impl ElementsRpc {
         Ok(balances)
     }
 
+    /// Estimates the fee rate for a transaction using the Elements node's
+    /// `estimatesmartfee` RPC.
+    ///
+    /// # Arguments
+    /// * `conf_target` - Confirmation target in blocks (e.g. 6)
+    ///
+    /// # Returns
+    /// Returns a JSON value containing at least `feerate` (BTC/kB).
+    /// On regtest/Liquid this typically returns a minimum fee rate.
+    ///
+    /// # Errors
+    /// Returns an error if the RPC call fails
+    pub async fn estimatesmartfee(
+        &self,
+        conf_target: u32,
+    ) -> Result<serde_json::Value, AmpError> {
+        tracing::debug!("Estimating smart fee for conf_target={conf_target}");
+        self.rpc_call("estimatesmartfee", serde_json::json!([conf_target]))
+            .await
+    }
+
+    /// Sends L-BTC to an address from a specific wallet using the Elements
+    /// node's `sendtoaddress` RPC.
+    ///
+    /// # Arguments
+    /// * `wallet_name` - The wallet to send from
+    /// * `address` - The destination Liquid address
+    /// * `amount_btc` - The amount in BTC (not satoshis)
+    /// * `subtract_fee` - If true, the fee is subtracted from the sent amount
+    ///
+    /// # Returns
+    /// Returns the transaction ID on success.
+    ///
+    /// # Errors
+    /// Returns an error if the wallet cannot be loaded or the RPC call fails
+    pub async fn sendtoaddress(
+        &self,
+        wallet_name: &str,
+        address: &str,
+        amount_btc: f64,
+        subtract_fee: bool,
+    ) -> Result<String, AmpError> {
+        tracing::debug!(
+            "sendtoaddress wallet={wallet_name} dest={address} amount={amount_btc} subtract_fee={subtract_fee}"
+        );
+
+        self.load_wallet(wallet_name).await?;
+
+        // sendtoaddress params: address, amount, comment, comment_to, subtractfeefromamount
+        let params = serde_json::json!([address, amount_btc, "", "", subtract_fee]);
+
+        let request = RpcRequest {
+            jsonrpc: "1.0".to_string(),
+            id: "amp-client".to_string(),
+            method: "sendtoaddress".to_string(),
+            params,
+        };
+
+        let base = self.base_url.trim_end_matches('/');
+        let wallet_url = format!("{base}/wallet/{wallet_name}");
+
+        let response = self
+            .client
+            .post(&wallet_url)
+            .basic_auth(&self.username, Some(&self.password))
+            .json(&request)
+            .send()
+            .await
+            .map_err(|e| {
+                AmpError::rpc(format!("Failed to send sendtoaddress RPC request: {e}"))
+            })?;
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let error_body = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unable to read error body".to_string());
+            return Err(AmpError::rpc(format!(
+                "sendtoaddress RPC request failed with status: {status} - Body: {error_body}"
+            )));
+        }
+
+        let rpc_response: RpcResponse<String> = response.json().await.map_err(|e| {
+            AmpError::rpc(format!("Failed to parse sendtoaddress RPC response: {e}"))
+        })?;
+
+        if let Some(error) = rpc_response.error {
+            return Err(AmpError::rpc(format!(
+                "sendtoaddress RPC error: {} (code: {})",
+                error.message, error.code
+            )));
+        }
+
+        rpc_response
+            .result
+            .ok_or_else(|| AmpError::rpc("sendtoaddress response missing txid".to_string()))
+    }
+
     /// Selects appropriate UTXOs to cover the required amount plus fees
     ///
     /// This method implements a simple UTXO selection algorithm that:
